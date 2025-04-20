@@ -5,13 +5,30 @@ import { ThemeProvider as NextThemesProvider } from "next-themes"
 
 interface ThemeProviderProps extends React.PropsWithChildren {
   storageKey?: string
-  defaultTheme?: "system" | "dark" | "light"
   forceHydrate?: boolean
 }
 
 export function ThemeProvider({
   children,
-  ...props
+  storageKey,
+  forceHydrate,
 }: ThemeProviderProps) {
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  return (
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem={true}
+      storageKey={storageKey}
+      forceHydrate={forceHydrate}
+    >
+      {children}
+    </NextThemesProvider>
+  );
 }
+

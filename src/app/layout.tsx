@@ -24,12 +24,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProvider defaultTheme="system" storageKey="brainy-theme">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body>
+        <ThemeProvider storageKey="brainy-theme">
           {children}
         </ThemeProvider>
       </body>
     </html>
   );
 }
+
