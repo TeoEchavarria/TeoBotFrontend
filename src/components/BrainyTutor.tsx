@@ -145,34 +145,38 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
     const [saved, setSaved] = useState(false);
 
     const handleSaveToVault = () => {
-      saveQuery(userQuery);
-      setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+      if (saved) {
+        // Si ya estaba guardado, lo marcamos como no guardado
+        setSaved(false);
+      } else {
+        // Si no estaba guardado, lo guardamos
+        saveQuery(userQuery);
+        setSaved(true);
+      }
     };
 
     return (
       <div>
         <h3 className="text-lg font-semibold mt-4">Anki Flashcard</h3>
         <div className="mt-2">
-          <p>
-            <span className="font-semibold">Front:</span> {anki.front}
-          </p>
-          <p>
-            <span className="font-semibold">Back:</span> {anki.back}
-          </p>
+          <p><span className="font-semibold">Front:</span> {anki.front}</p>
+          <p><span className="font-semibold">Back:</span> {anki.back}</p>
           <div className="anki-actions">
             <Button variant="outline" className="btn">
               Convert to ANKI CARD
             </Button>
-             <Button
-                variant="outline"
-                aria-label={saved ? "Saved to vault" : "Save to vault"}
-                title={saved ? "Saved!" : "Save to vault"}
-                className="icon-btn"
-                onClick={handleSaveToVault}
-              >
-                {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-              </Button>
+            <Button
+              variant="outline"
+              aria-label={saved ? "Remove from vault" : "Save to vault"}
+              title={saved ? "Removed from vault" : "Saved to vault"}
+              className="icon-btn"
+              onClick={handleSaveToVault}
+            >
+              {saved
+                ? <BookmarkCheck className="h-4 w-4" />
+                : <Bookmark className="h-4 w-4" />
+              }
+            </Button>
           </div>
         </div>
       </div>
@@ -180,33 +184,47 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   };
 
   return (
-    <div className="flex flex-col space-y-4 w-full max-w-2xl">
-      <form className="flex flex-wrap gap-3 items-center">
-        <Input
-          type="text"
-          placeholder="Enter your query"
-          value={userQuery}
-          onChange={handleSearch}
-          className="flex-grow min-w-[12rem]"
-        />
-        <Button type="button" onClick={handleSearchClick} disabled={isLoading} className="flex-none">
-          {isLoading ? (
-            <>
-              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-              Searching...
-            </>
-          ) : (
-            "Search"
-          )}
-        </Button>
-        <Label htmlFor="step-by-step" className="flex-none flex items-center gap-1">
-          Step-by-Step
-          <Switch
-            id="step-by-step"
-            checked={stepByStep}
-            onCheckedChange={handleToggle}
+    <div className="flex flex-col space-y-4 w-full mx-auto">
+      <form className="w-full mx-auto mt-8 w-full max-w-xl p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          {/* Expansive, centered input */}
+          <Input
+            type="text"
+            placeholder="Enter your query"
+            value={userQuery}
+            onChange={e => onUserQueryChange(e.target.value)}
+            className="flex-1 h-12 px-4 text-lg rounded-lg border border-gray-300 dark:border-gray-600"
           />
-        </Label>
+
+          {/* Two-button group like Google */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <Button
+              type="button"
+              onClick={handleSearchClick}
+              disabled={isLoading}
+              className="flex-1 h-12 text-base rounded-lg"
+            >
+              {isLoading ? (
+                <>
+                  <Icons.spinner className="mr-2 h-5 w-5 animate-spin" />
+                  Searching...
+                </>
+              ) : (
+                "Search"
+              )}
+            </Button>
+
+            <Button
+              variant={stepByStep ? "secondary" : "outline"}
+              type="button"
+              onClick={() => onStepByStepChange(!stepByStep)}
+              className="flex-1 h-12 text-base rounded-lg"
+              aria-label="Toggle step-by-step"
+            >
+              {stepByStep ? "Step-by-Step On" : "Step-by-Step Off"}
+            </Button>
+          </div>
+        </div>
       </form>
 
       {isLoading && (
@@ -218,7 +236,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
       )}
 
       {searchClicked && response && !isLoading && (
-        <Card>
+        <Card className="border-none shadow-none">
           <CardContent className="p-4">
             {stepByStep ? (
               (response as StepByStepResponse)?.clues?.map((clue, index) => (

@@ -4,6 +4,9 @@
 
 body {
   font-family: Optima, Candara, Calibri, Arial, sans-serif;
+  margin: 0 auto;
+  padding: 1rem;
+  max-width: 1200px;
 }
 
 code {
@@ -101,6 +104,20 @@ code {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .search-bar {
+    @apply flex flex-col sm:flex-row items-center gap-4;
+  }
+
+  .search-input {
+    @apply flex-1 h-12 px-4 text-lg rounded-lg border;
+  }
+
+  .search-buttons {
+    @apply flex flex-col sm:flex-row gap-3 w-full sm:w-auto;
   }
 }
 
