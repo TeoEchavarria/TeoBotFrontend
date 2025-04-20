@@ -14,6 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Bookmark } from 'lucide-react';
+import { useVault } from '@/hooks/use-vault';
 
 interface BrainyTutorProps {
   userQuery: string;
@@ -33,6 +34,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   const [searchClicked, setSearchClicked] = useState(false);
   const [revealedClues, setRevealedClues] = useState<boolean[]>([]);
   const { toast } = useToast();
+  const { saveQuery } = useVault();
 
   useEffect(() => {
     if (stepByStep && response && (response as StepByStepResponse).clues) {
@@ -181,14 +183,19 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
             "Search"
           )}
         </Button>
-        <Label htmlFor="step-by-step" className="text-sm font-medium">
-          Step-by-Step
-        </Label>
-        <Switch
-          id="step-by-step"
-          checked={stepByStep}
-          onCheckedChange={handleToggle}
-        />
+        <div className="flex items-center space-x-2">
+          <Label htmlFor="step-by-step" className="text-sm font-medium">
+            Step-by-Step
+          </Label>
+          <Switch
+            id="step-by-step"
+            checked={stepByStep}
+            onCheckedChange={handleToggle}
+          />
+          <Button variant="outline" aria-label="Save to vault" title="Save to vault" onClick={() => saveQuery(userQuery)}>
+            <Bookmark className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {isLoading && (
@@ -242,3 +249,4 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
     </div>
   );
 };
+
