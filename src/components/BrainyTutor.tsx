@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Bookmark } from 'lucide-react';
+import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { useVault } from '@/hooks/use-vault';
 
 interface BrainyTutorProps {
@@ -142,9 +142,12 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
 
   const AnkiSection = ({ anki }: { anki: SummaryResponse['anki'] }) => {
+    const [saved, setSaved] = useState(false);
+
     const handleSaveToVault = () => {
       saveQuery(userQuery);
-      setIsSaved(true);
+      setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
     };
 
     return (
@@ -163,16 +166,12 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
             </Button>
              <Button
                 variant="outline"
-                aria-label="Save to vault"
-                title="Save to vault"
+                aria-label={saved ? "Saved to vault" : "Save to vault"}
+                title={saved ? "Saved!" : "Save to vault"}
                 className="icon-btn"
                 onClick={handleSaveToVault}
               >
-                {isSaved ? (
-                  <Bookmark className="h-4 w-4" />
-                ) : (
-                  <Bookmark className="h-4 w-4" />
-                )}
+                {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
               </Button>
           </div>
         </div>
