@@ -91,12 +91,6 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     onUserQueryChange(event.target.value);
-    setSearchClicked(false); // Reset search clicked when typing
-    setResponse(null); // Clear previous response when typing
-    setRevealedClues([]);
-    if (event.target.value) {
-      fetchData();
-    }
   };
 
   const handleToggle = (checked: boolean) => {
@@ -152,12 +146,14 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
           <p>
             <span className="font-semibold">Back:</span> {anki.back}
           </p>
-          <Button variant="outline" className="mr-2">
-            Convert to ANKI CARD
-          </Button>
-          <Button variant="outline" aria-label="Save to vault" title="Save to vault">
-            <Bookmark className="h-4 w-4" />
-          </Button>
+          <div className="anki-actions">
+            <Button variant="outline" className="btn">
+              Convert to ANKI CARD
+            </Button>
+            <Button variant="outline" aria-label="Save to vault" title="Save to vault" className="icon-btn" onClick={() => saveQuery(userQuery)}>
+              <Bookmark className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -165,7 +161,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
   return (
     <div className="flex flex-col space-y-4 w-full max-w-2xl">
-      <div className="flex items-center space-x-2">
+      <form className="search-bar">
         <Input
           type="text"
           placeholder="Enter your query"
@@ -173,7 +169,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
           onChange={handleSearch}
           className="flex-grow"
         />
-        <Button onClick={handleSearchClick} disabled={isLoading}>
+        <Button type="button" onClick={handleSearchClick} disabled={isLoading}>
           {isLoading ? (
             <>
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -183,20 +179,15 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
             "Search"
           )}
         </Button>
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="step-by-step" className="text-sm font-medium">
-            Step-by-Step
-          </Label>
+        <Label htmlFor="step-by-step" className="toggle">
+          Step-by-Step
           <Switch
             id="step-by-step"
             checked={stepByStep}
             onCheckedChange={handleToggle}
           />
-          <Button variant="outline" aria-label="Save to vault" title="Save to vault" onClick={() => saveQuery(userQuery)}>
-            <Bookmark className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+        </Label>
+      </form>
 
       {isLoading && (
         <Alert>
@@ -249,4 +240,3 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
     </div>
   );
 };
-

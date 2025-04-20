@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { Bookmark } from 'lucide-react';
+import { Bookmark, X } from 'lucide-react';
 import { useVault } from '@/hooks/use-vault';
 import { Button } from "@/components/ui/button";
 
@@ -20,7 +20,7 @@ export const Vault = () => {
 
     return (
         <>
-            <button
+            <Button
                 id="openVault"
                 className="icon-btn absolute top-2 right-12"
                 onClick={toggleVault}
@@ -28,16 +28,21 @@ export const Vault = () => {
                 title="Open vault"
             >
                 <Bookmark aria-label="Open vault" />
-            </button>
+            </Button>
 
             <aside
                 id="vaultDrawer"
-                className={`fixed top-0 right-0 h-full w-80 bg-background border-l border-border shadow-xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'} z-50`}
+                className={`drawer ${isOpen ? 'open' : ''}`}
             >
-                <div className="p-4">
-                    <header className="text-lg font-semibold mb-4">Saved Queries</header>
+                <div className="drawer-content">
+                    <header className="drawer-header">
+                        <div className="text-lg font-semibold">Saved Queries</div>
+                        <Button variant="ghost" size="icon" onClick={toggleVault} className="drawer-close">
+                            <X aria-label="Close vault" />
+                        </Button>
+                    </header>
                     {savedQueries.length === 0 ? (
-                        <p className="text-muted-foreground">No saved items yet</p>
+                        <p className="no-saved-items">No saved items yet</p>
                     ) : (
                         <ul id="vaultList" className="space-y-2">
                             {savedQueries.map((query, index) => (
