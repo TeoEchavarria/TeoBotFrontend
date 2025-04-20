@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ThemeProvider as NextThemesProvider } from "next-themes"
+import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
 
 interface ThemeProviderProps extends React.PropsWithChildren {
   storageKey?: string
@@ -10,8 +10,7 @@ interface ThemeProviderProps extends React.PropsWithChildren {
 
 export function ThemeProvider({
   children,
-  storageKey,
-  forceHydrate,
+  ...props
 }: ThemeProviderProps) {
   const [mounted, setMounted] = React.useState(false);
 
@@ -19,16 +18,13 @@ export function ThemeProvider({
     setMounted(true);
   }, []);
 
+  if (!mounted) {
+    return <>{children}</>;
+  }
+
   return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem={true}
-      storageKey={storageKey}
-      forceHydrate={forceHydrate}
-    >
+    <NextThemesProvider {...props} attribute="class" defaultTheme="system" enableSystem={true}>
       {children}
     </NextThemesProvider>
   );
 }
-
