@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Bookmark } from 'lucide-react';
 
 interface BrainyTutorProps {
   userQuery: string;
@@ -33,7 +33,6 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   const [searchClicked, setSearchClicked] = useState(false);
   const [revealedClues, setRevealedClues] = useState<boolean[]>([]);
   const { toast } = useToast();
-  const cluesContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (stepByStep && response && (response as StepByStepResponse).clues) {
@@ -44,12 +43,36 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   const fetchData = async () => {
     setIsLoading(true);
     try {
+      // Mocked data for testing purposes
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
+
+      const mockedSummaryResponse: SummaryResponse = {
+        answer: 'The answer is multifaceted and complex, tailored to the query.',
+        example: {
+          title: 'A Practical Scenario',
+          steps: ['Consider a scenario...', 'Apply the concept...', 'Observe the result...'],
+        },
+        analogy: 'It is like building a house from scratch, one brick at a time.',
+        anki: { front: 'What is a key concept?', back: 'Multifacetedness and step-by-step learning' },
+      };
+
+      const mockedStepByStepResponse: StepByStepResponse = {
+        clues: [
+          { order: 1, title: 'Step 1: Foundation', content: 'Lay the groundwork...', revealed: false },
+          { order: 2, title: 'Step 2: Construction', content: 'Build upon the base...', revealed: false },
+          { order: 3, title: 'Step 3: Completion', content: 'Finalize the structure...', revealed: false },
+        ],
+        anki: { front: 'What is the final step?', back: 'Completion with iterative refinement' },
+      };
+
       const params: BrainyTutorParams = {
         user_query: userQuery,
         step_by_step: stepByStep,
       };
-      const data = await getBrainyTutorResponse(params);
-      setResponse(data);
+
+      // setResponse(params.step_by_step ? mockedStepByStepResponse : mockedSummaryResponse);
+      const response = await getBrainyTutorResponse(params);
+      setResponse(response);
     } catch (error) {
       console.error("Failed to fetch data", error);
       toast({
@@ -66,10 +89,17 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     onUserQueryChange(event.target.value);
+    setSearchClicked(false); // Reset search clicked when typing
+    setResponse(null); // Clear previous response when typing
+    setRevealedClues([]);
+    if (event.target.value) {
+      fetchData();
+    }
   };
 
   const handleToggle = (checked: boolean) => {
     onStepByStepChange(checked);
+    setRevealedClues([]);
   };
 
   const handleSearchClick = () => {
@@ -123,7 +153,9 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
           <Button variant="outline" className="mr-2">
             Convert to ANKI CARD
           </Button>
-          <Button variant="outline">Bookmark</Button>
+          <Button variant="outline" aria-label="Save to vault" title="Save to vault">
+            <Bookmark className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     );
