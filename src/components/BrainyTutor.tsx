@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Bookmark } from 'lucide-react';
 import { useVault } from '@/hooks/use-vault';
+import { ThemeSwitcher } from './theme-switcher';
 
 interface BrainyTutorProps {
   userQuery: string;
@@ -38,7 +39,10 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
   useEffect(() => {
     if (stepByStep && response && (response as StepByStepResponse).clues) {
-      setRevealedClues(new Array((response as StepByStepResponse).clues.length).fill(false));
+      setRevealedClues(prev => {
+        const next = new Array((response as StepByStepResponse).clues.length).fill(false);
+        return next;
+      });
     }
   }, [stepByStep, response]);
 
