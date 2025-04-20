@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { BrainyTutor } from '@/components/BrainyTutor';
 import { Vault } from '@/components/Vault';
-import { ThemeSwitcher } from '@/components/theme-switcher';
 
 export default function Home() {
   const [userQuery, setUserQuery] = useState('');
@@ -19,7 +18,6 @@ export default function Home() {
       />
       <div className="fixed-buttons">
           <Vault />
-          <ThemeSwitcher />
       </div>
     </>
   );

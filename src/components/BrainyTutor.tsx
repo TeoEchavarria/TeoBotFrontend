@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { getBrainyTutorResponse, SummaryResponse, StepByStepResponse, BrainyTutorParams, Clue } from '@/services/brainy-tutor';
+import { getBrainyTutorResponse, SummaryResponse, StepByStepResponse, BrainyTutorParams } from '@/services/brainy-tutor';
 import ReactMarkdown from 'react-markdown';
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Bookmark } from 'lucide-react';
+import { Bookmark, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { useVault } from '@/hooks/use-vault';
 
 interface BrainyTutorProps {
@@ -36,15 +37,18 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   const { toast } = useToast();
   const { savedQueries, saveQuery, deleteQuery } = useVault();
   const [isSaved, setIsSaved] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Reset clues when toggling or new response
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (stepByStep && response && (response as StepByStepResponse).clues) {
       setRevealedClues(new Array((response as StepByStepResponse).clues.length).fill(false));
     }
   }, [stepByStep, response]);
 
-  // Check saved state
   useEffect(() => {
     const exists = savedQueries.some(q => q.text === userQuery);
     setIsSaved(exists);
@@ -52,23 +56,18 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
   const fetchData = async () => {
     setIsLoading(true);
-    setIsSaved(false);
     try {
       const params: BrainyTutorParams = { user_query: userQuery, step_by_step: stepByStep };
       const res = await getBrainyTutorResponse(params);
       setResponse(res);
+      setSearchClicked(true);
     } catch (error) {
       console.error(error);
       toast({ title: "Error", description: "No se pudo obtener la respuesta.", variant: "destructive" });
-      setResponse(null);
-      setRevealedClues([]);
     } finally {
       setIsLoading(false);
-      setSearchClicked(true);
     }
   };
-
-  const handleSearchClick = () => fetchData();
 
   const revealClue = (index: number) => {
     setRevealedClues(prev => { const next = [...prev]; next[index] = true; return next; });
@@ -86,25 +85,25 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   };
 
   const ExampleSection = ({ example }: { example?: SummaryResponse['example'] }) => {
-  // Guard: only render if example exists
-  if (!example) return null;
-  return (
-    <div>
-      <h3 className="text-lg font-semibold mt-4">Example: {example.title}</h3>
-      <Accordion type="single" collapsible>
-        <AccordionItem value="example" className="border-none">
-          <AccordionTrigger>Preview Steps</AccordionTrigger>
-          <AccordionContent>
-            <ul className="list-disc pl-5 mt-2">
-              {example.steps.map((step, i) => <li key={i}>{step}</li>)}
-            </ul>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-    </div>
-  );
-};
-const AnkiSection: React.FC<{anki: SummaryResponse['anki']}> = ({ anki }) => (
+    if (!example) return null;
+    return (
+      <div>
+        <h3 className="text-lg font-semibold mt-4">Example: {example.title}</h3>
+        <Accordion type="single" collapsible>
+          <AccordionItem value="example" className="border-none">
+            <AccordionTrigger>Preview Steps</AccordionTrigger>
+            <AccordionContent>
+              <ul className="list-disc pl-5 mt-2">
+                {example.steps.map((step, i) => <li key={i}>{step}</li>)}
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
+    );
+  };
+
+  const AnkiSection: React.FC<{anki: SummaryResponse['anki']}> = ({ anki }) => (
     <div>
       <h3 className="text-lg font-semibold mt-4">Anki Flashcard</h3>
       <div className="mt-2 anki-actions">
@@ -113,20 +112,18 @@ const AnkiSection: React.FC<{anki: SummaryResponse['anki']}> = ({ anki }) => (
           onClick={handleSaveClick}
           aria-label={isSaved ? "Remove from vault" : "Save to vault"}
           title={isSaved ? "Removed from vault" : "Saved to vault"}
-          className="icon-btn"
+          className="p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition transform hover:scale-105"
         >
-          <Bookmark
-            className="h-4 w-4"
-            fill={isSaved ? 'currentColor' : 'none'}
-            stroke="currentColor"
-          />
+          <Bookmark className="h-5 w-5" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" />
         </Button>
       </div>
     </div>
   );
 
+  if (!mounted) return null;
+
   return (
-    <div className="w-full mx-auto space-y-6">
+    <div className="w-full mx-auto space-y-6 pb-24">
       {/* Search Form */}
       <form className="w-full max-w-xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
         <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -138,22 +135,15 @@ const AnkiSection: React.FC<{anki: SummaryResponse['anki']}> = ({ anki }) => (
             className="flex-1 h-12 px-4 text-lg rounded-lg border border-gray-300 dark:border-gray-600"
           />
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <Button
-              type="button"
-              onClick={handleSearchClick}
-              disabled={isLoading}
-              className="flex-1 h-12 text-base rounded-lg"
+            <Button type="button" onClick={fetchData} disabled={isLoading}
+              className="flex-1 h-12 bg-blue-600 text-white rounded-full shadow hover:bg-blue-700 transition transform hover:scale-105"
             >
-              {isLoading
-                ? <><Icons.spinner className="mr-2 h-5 w-5 animate-spin"/>Searching...</>
-                : "Search"
-              }
+              {isLoading ? <><Icons.spinner className="mr-2 h-5 w-5 animate-spin"/>Searching...</> : "Search"}
             </Button>
             <Button
-              variant={stepByStep ? "secondary" : "outline"}
               type="button"
               onClick={() => onStepByStepChange(!stepByStep)}
-              className="flex-1 h-12 text-base rounded-lg"
+              className={`flex-1 h-12 rounded-full shadow transition transform hover:scale-105 ${stepByStep ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
             >
               {stepByStep ? "Step-by-Step On" : "Step-by-Step Off"}
             </Button>
@@ -161,7 +151,7 @@ const AnkiSection: React.FC<{anki: SummaryResponse['anki']}> = ({ anki }) => (
         </div>
       </form>
 
-      {/* Loading State */}
+      {/* Loading */}
       {isLoading && (
         <Alert>
           <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -183,7 +173,7 @@ const AnkiSection: React.FC<{anki: SummaryResponse['anki']}> = ({ anki }) => (
                     <ReactMarkdown>{clue.content}</ReactMarkdown>
                   </div>
                   {!revealedClues[idx] && (
-                    <Button variant="outline" onClick={() => revealClue(idx)}>Reveal Clue</Button>
+                    <Button variant="outline" className="rounded-full shadow hover:scale-105 transition-transform" onClick={() => revealClue(idx)}>Reveal Clue</Button>
                   )}
                 </div>
               ))
@@ -191,15 +181,10 @@ const AnkiSection: React.FC<{anki: SummaryResponse['anki']}> = ({ anki }) => (
               <>
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold">Answer</h3>
-                  <div className="prose prose-sm mt-2">
-                    <ReactMarkdown>{(response as SummaryResponse).answer}</ReactMarkdown>
-                  </div>
+                  <div className="prose prose-sm mt-2"><ReactMarkdown>{(response as SummaryResponse).answer}</ReactMarkdown></div>
                 </div>
                 <ExampleSection example={(response as SummaryResponse).example} />
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold mt-4">Analogy</h3>
-                  <p className="mt-2">{(response as SummaryResponse).analogy}</p>
-                </div>
+                <div className="mb-4"><h3 className="text-lg font-semibold mt-4">Analogy</h3><p className="mt-2">{(response as SummaryResponse).analogy}</p></div>
                 <AnkiSection anki={(response as SummaryResponse).anki} />
               </>
             }
