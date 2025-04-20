@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,14 +28,10 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 }) => {
   const [response, setResponse] = useState<SummaryResponse | StepByStepResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchClicked, setSearchClicked] = useState(false);
   const { toast } = useToast();
 
   const fetchData = async () => {
-    if (!userQuery) {
-      setResponse(null);
-      return;
-    }
-
     setIsLoading(true);
     try {
       const params: BrainyTutorParams = {
@@ -51,15 +47,11 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
         description: "Failed to retrieve information. Please try again.",
         variant: "destructive",
       });
+      setResponse(null); // Clear previous response on error
     } finally {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userQuery, stepByStep]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     onUserQueryChange(event.target.value);
@@ -67,6 +59,11 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
   const handleToggle = (checked: boolean) => {
     onStepByStepChange(checked);
+  };
+
+  const handleSearchClick = () => {
+    setSearchClicked(true);
+    fetchData();
   };
 
   return (
@@ -79,6 +76,16 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
           onChange={handleSearch}
           className="flex-grow"
         />
+        <Button onClick={handleSearchClick} disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              Searching...
+            </>
+          ) : (
+            "Search"
+          )}
+        </Button>
         <Label htmlFor="step-by-step" className="text-sm font-medium">
           Step-by-Step
         </Label>
@@ -97,7 +104,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
         </Alert>
       )}
 
-      {response && !isLoading && (
+      {searchClicked && response && !isLoading && (
         <Card>
           <CardContent className="p-4">
             {stepByStep ? (
@@ -118,7 +125,6 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
                 <div className="prose prose-sm mt-2">
                   <ReactMarkdown>{(response as SummaryResponse).answer}</ReactMarkdown>
                 </div>
-                {/* Conditional rendering to prevent errors */}
                 {(response as SummaryResponse)?.example && (response as SummaryResponse)?.example?.steps && (
                   <>
                     <h3 className="text-lg font-semibold mt-4">

@@ -88,26 +88,27 @@ export interface BrainyTutorParams {
 export async function getBrainyTutorResponse(
   params: BrainyTutorParams
 ): Promise<SummaryResponse | StepByStepResponse> {
-  // TODO: Implement this by calling an external API.
+  // Mocked data for testing purposes
+  await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
 
   if (params.step_by_step) {
     return {
       clues: [
-        { order: 1, title: 'First clue', content: 'Clue 1 content', revealed: false },
-        { order: 2, title: 'Second clue', content: 'Clue 2 content', revealed: false },
-        { order: 3, title: 'Third clue', content: 'Clue 3 content', revealed: false },
+        { order: 1, title: 'Step 1: Foundation', content: 'Lay the groundwork...', revealed: false },
+        { order: 2, title: 'Step 2: Construction', content: 'Build upon the base...', revealed: false },
+        { order: 3, title: 'Step 3: Completion', content: 'Finalize the structure...', revealed: false },
       ],
-      anki: { front: 'Anki question', back: 'Anki answer' },
+      anki: { front: 'What is the final step?', back: 'Completion' },
     };
   } else {
     return {
-      answer: 'Brief answer.',
+      answer: 'The answer is multifaceted and complex.',
       example: {
-        title: 'Practical Example',
-        steps: ['Step 1: ...', 'Step 2: ...', 'Step 3: ...'],
+        title: 'A Practical Scenario',
+        steps: ['Consider a scenario...', 'Apply the concept...', 'Observe the result...'],
       },
-      analogy: 'Clear analogy.',
-      anki: { front: 'Anki question', back: 'Anki answer' },
+      analogy: 'It is like building a house from scratch.',
+      anki: { front: 'What is a key concept?', back: 'Multifacetedness' },
     };
   }
 }
