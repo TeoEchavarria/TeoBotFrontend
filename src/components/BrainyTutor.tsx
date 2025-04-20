@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface BrainyTutorProps {
   userQuery: string;
@@ -31,6 +33,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   const [searchClicked, setSearchClicked] = useState(false);
   const [revealedClues, setRevealedClues] = useState<boolean[]>([]);
   const { toast } = useToast();
+  const cluesContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (stepByStep && response && (response as StepByStepResponse).clues) {
@@ -81,6 +84,49 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
       next[index] = true;
       return next;
     });
+  };
+
+  const ExampleSection = ({ example }: { example: SummaryResponse['example'] }) => {
+    return (
+      <div>
+        <h3 className="text-lg font-semibold mt-4">Example: {example.title}</h3>
+        <Accordion type="single" collapsible>
+          <AccordionItem value="example">
+            <AccordionTrigger>
+              Preview Steps
+            </AccordionTrigger>
+            <AccordionContent>
+              <ul className="list-disc pl-5 mt-2">
+                {example.steps.map((step, index) => (
+                  <li key={index}>{step}</li>
+                ))}
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
+    );
+  };
+
+
+  const AnkiSection = ({ anki }: { anki: SummaryResponse['anki'] }) => {
+    return (
+      <div>
+        <h3 className="text-lg font-semibold mt-4">Anki Flashcard</h3>
+        <div className="mt-2">
+          <p>
+            <span className="font-semibold">Front:</span> {anki.front}
+          </p>
+          <p>
+            <span className="font-semibold">Back:</span> {anki.back}
+          </p>
+          <Button variant="outline" className="mr-2">
+            Convert to ANKI CARD
+          </Button>
+          <Button variant="outline">Bookmark</Button>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -141,43 +187,23 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
               ))
             ) : (
               <>
-                <h3 className="text-lg font-semibold">
-                  Answer
-                </h3>
-                <div className="prose prose-sm mt-2">
-                  <ReactMarkdown>{(response as SummaryResponse).answer}</ReactMarkdown>
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold">Answer</h3>
+                  <div className="prose prose-sm mt-2">
+                    <ReactMarkdown>{(response as SummaryResponse).answer}</ReactMarkdown>
+                  </div>
                 </div>
-                {(response as SummaryResponse)?.example && (response as SummaryResponse)?.example?.steps && (
-                  <>
-                    <h3 className="text-lg font-semibold mt-4">
-                      Example: {(response as SummaryResponse).example.title}
-                    </h3>
-                    <ul className="list-disc pl-5 mt-2">
-                      {(response as SummaryResponse).example.steps.map((step, index) => (
-                        <li key={index}>{step}</li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-                <h3 className="text-lg font-semibold mt-4">
-                  Analogy
-                </h3>
-                <p className="mt-2">{(response as SummaryResponse).analogy}</p>
+
+                <ExampleSection example={(response as SummaryResponse).example} />
+
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold mt-4">Analogy</h3>
+                  <p className="mt-2">{(response as SummaryResponse).analogy}</p>
+                </div>
+
+                <AnkiSection anki={(response as SummaryResponse).anki} />
               </>
             )}
-            <h3 className="text-lg font-semibold mt-4">
-              Anki Flashcard
-            </h3>
-            <div className="mt-2">
-              <p>
-                <span className="font-semibold">Front:</span>{" "}
-                {(response as SummaryResponse).anki.front}
-              </p>
-              <p>
-                <span className="font-semibold">Back:</span>{" "}
-                {(response as SummaryResponse).anki.back}
-              </p>
-            </div>
           </CardContent>
         </Card>
       )}
