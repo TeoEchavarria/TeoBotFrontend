@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { getBrainyTutorResponse, SummaryResponse, StepByStepResponse, BrainyTutorParams } from '@/services/brainy-tutor';
+import { getBrainyTutorResponse, SummaryResponse, StepByStepResponse, BrainyTutorParams, Clue } from '@/services/brainy-tutor';
 import ReactMarkdown from 'react-markdown';
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,14 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   const [response, setResponse] = useState<SummaryResponse | StepByStepResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchClicked, setSearchClicked] = useState(false);
+  const [revealedClues, setRevealedClues] = useState<boolean[]>([]);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (stepByStep && response && (response as StepByStepResponse).clues) {
+      setRevealedClues(new Array((response as StepByStepResponse).clues.length).fill(false));
+    }
+  }, [stepByStep, response]);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -48,6 +55,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
         variant: "destructive",
       });
       setResponse(null); // Clear previous response on error
+      setRevealedClues([]);
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +71,16 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
   const handleSearchClick = () => {
     setSearchClicked(true);
+    setRevealedClues([]);
     fetchData();
+  };
+
+  const revealClue = (index: number) => {
+    setRevealedClues(prev => {
+      const next = [...prev];
+      next[index] = true;
+      return next;
+    });
   };
 
   return (
@@ -108,13 +125,18 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
         <Card>
           <CardContent className="p-4">
             {stepByStep ? (
-              (response as StepByStepResponse)?.clues?.map((clue) => (
+              (response as StepByStepResponse)?.clues?.map((clue, index) => (
                 <div key={clue.order} className="mb-4">
                   <Badge variant="secondary">Clue {clue.order}</Badge>
                   <h3 className="text-lg font-semibold">{clue.title}</h3>
-                  <div className="prose prose-sm mt-2">
+                  <div className={`prose prose-sm mt-2 ${!revealedClues[index] ? 'blur-lg' : ''}`}>
                     <ReactMarkdown>{clue.content}</ReactMarkdown>
                   </div>
+                  {!revealedClues[index] && (
+                    <Button variant="outline" onClick={() => revealClue(index)}>
+                      Reveal Clue
+                    </Button>
+                  )}
                 </div>
               ))
             ) : (
