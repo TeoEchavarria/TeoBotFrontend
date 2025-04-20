@@ -117,14 +117,19 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
                 <div className="prose prose-sm mt-2">
                   <ReactMarkdown>{(response as SummaryResponse).answer}</ReactMarkdown>
                 </div>
-                <h3 className="text-lg font-semibold mt-4">
-                  Example: {(response as SummaryResponse).example.title}
-                </h3>
-                <ul className="list-disc pl-5 mt-2">
-                  {(response as SummaryResponse).example.steps.map((step, index) => (
-                    <li key={index}>{step}</li>
-                  ))}
-                </ul>
+                {/* Conditional rendering to prevent errors */}
+                {(response as SummaryResponse).example && (
+                  <>
+                    <h3 className="text-lg font-semibold mt-4">
+                      Example: {(response as SummaryResponse).example.title}
+                    </h3>
+                    <ul className="list-disc pl-5 mt-2">
+                      {(response as SummaryResponse).example.steps.map((step, index) => (
+                        <li key={index}>{step}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
                 <h3 className="text-lg font-semibold mt-4">
                   Analogy
                 </h3>
