@@ -206,109 +206,6 @@ code {
 #vaultDrawer .no-saved-items {
   color: hsl(var(--muted-foreground));
 }
-
-/* Responsive search bar */
-.search-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-/* &gt;=640px (tablets y arriba) mantén todo en una fila */
-@media (min-width: 640px) {
-  .search-bar {
-    flex-wrap: nowrap;
-  }
-}
-
-/* &lt;640px los botones saltan debajo del input */
-.search-bar > * {
-  flex: 0 0 auto;
-}
-
-.search-bar input {
-  flex: 1 1 100%; /* ancho completo */
-}
-
-.toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Responsive Anki actions */
-.anki-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-}
-
-@media (min-width: 640px) {
-  .anki-actions {
-    flex-wrap: nowrap;
-  }
-}
-
-.anki-actions .btn {
-  flex: 1 1 14rem; /* ancho mínimo, crece */
-}
-
-.anki-actions .icon-btn {
-  flex: 0 0 3rem; /* cuadrado fijo para el icono */
-}
-
-/* Drawer styling */
-#vaultDrawer {
-  transform: translateX(100%);
-  transition: transform 0.3s ease-in-out;
-}
-
-#vaultDrawer.open {
-  transform: translateX(0);
-}
-
-#vaultDrawer .drawer-content {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-#vaultDrawer .drawer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-#vaultDrawer .drawer-close {
-  cursor: pointer;
-  font-size: 1.25rem;
-}
-
-#vaultDrawer ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-#vaultDrawer li {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid hsl(var(--border));
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-#vaultDrawer li:last-child {
-  border-bottom: none;
-}
-
-#vaultDrawer .no-saved-items {
-  color: hsl(var(--muted-foreground));
-}
 /* Fixed buttons styling */
 .fixed-buttons {
   position: fixed;
@@ -323,3 +220,4 @@ code {
 .theme-toggle {
   @apply h-8 w-8 rounded-md border border-input bg-background text-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
 }
+

@@ -33,7 +33,7 @@ export const Vault = () => {
         <>
             <Button
                 id="openVault"
-                className="icon-btn absolute top-2 right-12"
+                className="icon-btn"
                 onClick={toggleVault}
                 aria-label="Open vault"
                 title="Open vault"

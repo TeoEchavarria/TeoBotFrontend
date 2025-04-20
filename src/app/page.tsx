@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from 'react';
 import { BrainyTutor } from '@/components/BrainyTutor';
@@ -17,9 +17,12 @@ export default function Home() {
         onUserQueryChange={setUserQuery}
         onStepByStepChange={setStepByStep}
       />
-      <Vault />
-      <ThemeSwitcher />
+      <div className="fixed-buttons">
+          <Vault />
+          <ThemeSwitcher />
+      </div>
     </>
   );
 }
+
 
