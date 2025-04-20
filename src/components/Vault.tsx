@@ -4,10 +4,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { Bookmark, X } from 'lucide-react';
 import { useVault } from '@/hooks/use-vault';
 import { Button } from "@/components/ui/button";
+import { useTheme } from 'next-themes';
 
 export const Vault = () => {
     const [isOpen, setIsOpen] = useState(false);
     const { savedQueries, deleteQuery } = useVault();
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const toggleVault = () => {
         setIsOpen(!isOpen);
@@ -17,6 +24,10 @@ export const Vault = () => {
         const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
         return date.toLocaleDateString(undefined, options);
     };
+
+    if (!mounted) {
+      return null;
+    }
 
     return (
         <>
@@ -60,6 +71,8 @@ export const Vault = () => {
                     )}
                 </div>
             </aside>
+                    {/* Alternar tema */}
         </>
     );
 };
+
