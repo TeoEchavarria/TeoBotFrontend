@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // experimental: {
+  //   turbo: {
+  //     loaders: {
+  //       // Add any custom loaders here
+  //     },
+  //   },
+  // },
 };
 
 export default nextConfig;
