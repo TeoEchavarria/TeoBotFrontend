@@ -58,6 +58,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userQuery, stepByStep]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,7 +101,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
         <Card>
           <CardContent className="p-4">
             {stepByStep ? (
-              (response as StepByStepResponse).clues.map((clue) => (
+              (response as StepByStepResponse)?.clues?.map((clue) => (
                 <div key={clue.order} className="mb-4">
                   <Badge variant="secondary">Clue {clue.order}</Badge>
                   <h3 className="text-lg font-semibold">{clue.title}</h3>
@@ -118,7 +119,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
                   <ReactMarkdown>{(response as SummaryResponse).answer}</ReactMarkdown>
                 </div>
                 {/* Conditional rendering to prevent errors */}
-                {(response as SummaryResponse).example && (
+                {(response as SummaryResponse)?.example && (response as SummaryResponse)?.example?.steps && (
                   <>
                     <h3 className="text-lg font-semibold mt-4">
                       Example: {(response as SummaryResponse).example.title}
