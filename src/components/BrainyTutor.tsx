@@ -15,7 +15,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Bookmark } from 'lucide-react';
 import { useVault } from '@/hooks/use-vault';
-import { ThemeSwitcher } from './theme-switcher';
 
 interface BrainyTutorProps {
   userQuery: string;
@@ -36,6 +35,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   const [revealedClues, setRevealedClues] = useState<boolean[]>([]);
   const { toast } = useToast();
   const { saveQuery } = useVault();
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     if (stepByStep && response && (response as StepByStepResponse).clues) {
@@ -48,6 +48,8 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
   const fetchData = async () => {
     setIsLoading(true);
+    setIsSaved(false); // Reset save state on new search
+
     try {
       // Mocked data for testing purposes
       await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
@@ -140,6 +142,11 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
 
   const AnkiSection = ({ anki }: { anki: SummaryResponse['anki'] }) => {
+    const handleSaveToVault = () => {
+      saveQuery(userQuery);
+      setIsSaved(true);
+    };
+
     return (
       <div>
         <h3 className="text-lg font-semibold mt-4">Anki Flashcard</h3>
@@ -154,9 +161,19 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
             <Button variant="outline" className="btn">
               Convert to ANKI CARD
             </Button>
-            <Button variant="outline" aria-label="Save to vault" title="Save to vault" className="icon-btn" onClick={() => saveQuery(userQuery)}>
-              <Bookmark className="h-4 w-4" />
-            </Button>
+             <Button
+                variant="outline"
+                aria-label="Save to vault"
+                title="Save to vault"
+                className="icon-btn"
+                onClick={handleSaveToVault}
+              >
+                {isSaved ? (
+                  <Bookmark className="h-4 w-4" />
+                ) : (
+                  <Bookmark className="h-4 w-4" />
+                )}
+              </Button>
           </div>
         </div>
       </div>
@@ -165,15 +182,15 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
   return (
     <div className="flex flex-col space-y-4 w-full max-w-2xl">
-      <form className="search-bar">
+      <form className="flex flex-wrap gap-3 items-center">
         <Input
           type="text"
           placeholder="Enter your query"
           value={userQuery}
           onChange={handleSearch}
-          className="flex-grow"
+          className="flex-grow min-w-[12rem]"
         />
-        <Button type="button" onClick={handleSearchClick} disabled={isLoading}>
+        <Button type="button" onClick={handleSearchClick} disabled={isLoading} className="flex-none">
           {isLoading ? (
             <>
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -183,7 +200,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
             "Search"
           )}
         </Button>
-        <Label htmlFor="step-by-step" className="toggle">
+        <Label htmlFor="step-by-step" className="flex-none flex items-center gap-1">
           Step-by-Step
           <Switch
             id="step-by-step"
