@@ -166,7 +166,6 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
           <CardContent className="p-3">
             {Object.entries(response).map(([key, value]) => (
               <div key={key} className="mb-3 py-2 pb-3 border-b last:border-b-0 last:mb-0 last:pb-0  max-w-[90%] mx-auto">
-                <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-1">{key}</h3>
                 <div className="prose prose-sm max-w-none">
                   <ReactMarkdown>{String(value)}</ReactMarkdown>
                 </div>
