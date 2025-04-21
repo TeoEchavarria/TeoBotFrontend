@@ -162,32 +162,16 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
       {/* Results */}
       {searchClicked && response && !isLoading && (
-        <Card className="border-none shadow-none">
-          <CardContent className="p-4">
-            {stepByStep ?
-              (response as StepByStepResponse).clues?.map((clue, idx) => (
-                <div key={clue.order} className="mb-4">
-                  <Badge variant="secondary">Clue {clue.order}</Badge>
-                  <h3 className="text-lg font-semibold">{clue.title}</h3>
-                  <div className={`${!revealedClues[idx] ? 'blur-lg' : ''} prose prose-sm mt-2`}>
-                    <ReactMarkdown>{clue.content}</ReactMarkdown>
-                  </div>
-                  {!revealedClues[idx] && (
-                    <Button variant="outline" className="rounded-full shadow hover:scale-105 transition-transform" onClick={() => revealClue(idx)}>Reveal Clue</Button>
-                  )}
+        <Card className="shadow-sm">
+          <CardContent className="p-3">
+            {Object.entries(response).map(([key, value]) => (
+              <div key={key} className="mb-3 pb-3 border-b last:border-b-0 last:mb-0 last:pb-0">
+                <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-1">{key}</h3>
+                <div className="prose prose-sm max-w-none">
+                  <ReactMarkdown>{String(value)}</ReactMarkdown>
                 </div>
-              ))
-            :
-              <>
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold">Answer</h3>
-                  <div className="prose prose-sm mt-2"><ReactMarkdown>{(response as SummaryResponse).answer}</ReactMarkdown></div>
-                </div>
-                <ExampleSection example={(response as SummaryResponse).example} />
-                <div className="mb-4"><h3 className="text-lg font-semibold mt-4">Analogy</h3><p className="mt-2">{(response as SummaryResponse).analogy}</p></div>
-                <AnkiSection anki={(response as SummaryResponse).anki} />
-              </>
-            }
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}
