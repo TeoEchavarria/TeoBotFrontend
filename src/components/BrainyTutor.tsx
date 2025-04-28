@@ -1,4 +1,4 @@
-// BrainyTutor.tsx – now handles generic key/value JSON for both modes
+// BrainyTutor.tsx – responsive: stacked on mobile, side‑by‑side on ≥sm
 
 "use client";
 
@@ -14,6 +14,15 @@ import { Icons } from "@/components/icons";
 import { getBrainyTutorResponse, BrainyTutorParams } from "@/services/brainy-tutor";
 import { useToast } from "@/hooks/use-toast";
 import { useVault } from "@/hooks/use-vault";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from "@/components/ui/dropdown-menu";
 
 interface BrainyTutorProps {
   userQuery: string;
@@ -36,18 +45,24 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   const { savedQueries, saveQuery, deleteQuery } = useVault();
   const [isSaved, setIsSaved] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<string>("default");
+
+  const profiles = [
+    { value: "default", label: "Default", imgSrc: "/profiles/default.png" },
+    { value: "life_coach", label: "Life Coach", imgSrc: "/profiles/life_coach.png" },
+    { value: "playful_explorer", label: "Playful Explorer", imgSrc: "/profiles/playful_explorer.png" },
+    { value: "expert", label: "Expert", imgSrc: "/profiles/expert_socratic_partner.png" },
+  ];
 
   /* ---------------- Effects ---------------- */
   useEffect(() => setMounted(true), []);
 
-  // Clear previous response whenever step‑by‑step mode toggles
   useEffect(() => {
     setResponse(null);
     setSearchClicked(false);
     setRevealedClues([]);
   }, [stepByStep]);
 
-  // Reset revealedClues each time we get new step‑by‑step data
   useEffect(() => {
     if (stepByStep && response) {
       const len = Object.keys(response).length;
@@ -55,7 +70,6 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
     }
   }, [stepByStep, response]);
 
-  // Vault sync
   useEffect(() => {
     setIsSaved(savedQueries.some((q) => q.text === userQuery));
   }, [savedQueries, userQuery]);
@@ -64,10 +78,15 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   const fetchData = async () => {
     setIsLoading(true);
     try {
+      const profileLabel =
+        profiles.find((p) => p.value === selectedProfile)?.label ?? selectedProfile;
+
       const params: BrainyTutorParams = {
         user_query: userQuery,
         step_by_step: stepByStep,
+        profile: profileLabel,
       };
+
       const res = await getBrainyTutorResponse(params);
       setResponse(res);
       setSearchClicked(true);
@@ -97,15 +116,49 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
   return (
     <div className="w-full mx-auto space-y-6 pb-24">
-      {/* Search bar */}
+      {/* Form */}
       <form className="w-full max-w-xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
         <div className="flex flex-col sm:flex-row items-center gap-4">
+          {/* Profile selector */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="w-full sm:w-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center sm:justify-center focus:outline-none">
+                <img
+                  src={profiles.find((p) => p.value === selectedProfile)?.imgSrc}
+                  alt={selectedProfile}
+                  className="hidden sm:block rounded-full"
+                />
+                <span className="sm:hidden text-sm font-medium truncate">
+                  {profiles.find((p) => p.value === selectedProfile)?.label}
+                </span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" sideOffset={4} className="w-56">
+              <DropdownMenuLabel>Profiles</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup value={selectedProfile} onValueChange={setSelectedProfile}>
+                {profiles.map(({ value, label, imgSrc }) => (
+                  <DropdownMenuRadioItem
+                    key={value}
+                    value={value}
+                    className="flex items-center space-x-4 px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                  >
+                    <span>{label}</span>
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Input */}
           <Input
             value={userQuery}
             placeholder="Enter your query"
             onChange={(e) => onUserQueryChange(e.target.value)}
             className="flex-1 h-12 px-4 text-lg rounded-lg border border-gray-300 dark:border-gray-600"
           />
+
+          {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <Button
               type="button"
@@ -154,9 +207,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
                 <div key={idx} className="mb-4">
                   <Badge variant="secondary">Clue {idx + 1}</Badge>
                   <h3 className="text-lg font-semibold">{title}</h3>
-                  <div
-                    className={`${!revealedClues[idx] ? "blur-lg" : ""} prose prose-sm mt-2`}
-                  >
+                  <div className={`${!revealedClues[idx] ? "blur-lg" : ""} prose prose-sm mt-2`}>
                     <ReactMarkdown>{String(content)}</ReactMarkdown>
                   </div>
                   {!revealedClues[idx] && (
@@ -180,7 +231,6 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
                 </div>
               ))
             )}
-            {/* Vault save button (optional positioning) */}
             {searchClicked && (
               <div className="flex justify-end mt-6">
                 <Button

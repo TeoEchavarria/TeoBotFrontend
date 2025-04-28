@@ -7,6 +7,7 @@ export interface Clue {
 export interface BrainyTutorParams {
   user_query: string;
   step_by_step: boolean;
+  profile: string;
 }
 /**
  * Asynchronously retrieves a response from the Brainy Tutor API.
@@ -32,7 +33,7 @@ export async function getBrainyTutorResponse(
   const res = await fetch(`${API_BASE}/execute`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question: params.user_query, step_by_step: params.step_by_step }),
+    body: JSON.stringify({ question: params.user_query, step_by_step: params.step_by_step , profile: params.profile }),
   });
 
   console.log('Response status:', res);
