@@ -40,6 +40,13 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   /* ---------------- Effects ---------------- */
   useEffect(() => setMounted(true), []);
 
+  // Clear previous response whenever step‑by‑step mode toggles
+  useEffect(() => {
+    setResponse(null);
+    setSearchClicked(false);
+    setRevealedClues([]);
+  }, [stepByStep]);
+
   // Reset revealedClues each time we get new step‑by‑step data
   useEffect(() => {
     if (stepByStep && response) {
