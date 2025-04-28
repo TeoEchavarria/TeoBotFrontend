@@ -51,7 +51,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
     { value: "default", label: "Default", imgSrc: "/profiles/default.png" },
     { value: "life_coach", label: "Life Coach", imgSrc: "/profiles/life_coach.png" },
     { value: "playful_explorer", label: "Playful Explorer", imgSrc: "/profiles/playful_explorer.png" },
-    { value: "expert", label: "Expert", imgSrc: "/profiles/expert_socratic_partner.png" },
+    { value: "expert_socratic_partner", label: "Expert", imgSrc: "/profiles/expert_socratic_partner.png" },
   ];
 
   /* ---------------- Effects ---------------- */
@@ -78,13 +78,11 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const profileLabel =
-        profiles.find((p) => p.value === selectedProfile)?.label ?? selectedProfile;
 
       const params: BrainyTutorParams = {
         user_query: userQuery,
         step_by_step: stepByStep,
-        profile: profileLabel,
+        profile: selectedProfile,
       };
 
       const res = await getBrainyTutorResponse(params);
@@ -200,14 +198,14 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
       {/* Results */}
       {searchClicked && response && !isLoading && (
-        <Card className="border-none shadow-none mx-auto max-w-[85%]">
+        <Card className="border-none shadow-none mx-auto max-w-[90%] sm:max-w-[70%] md:max-w-[65%]">
           <CardContent className="p-4">
             {stepByStep ? (
               Object.entries(response).map(([title, content], idx) => (
                 <div key={idx} className="mb-4">
                   <Badge variant="secondary">Clue {idx + 1}</Badge>
                   <h3 className="text-lg font-semibold">{title}</h3>
-                  <div className={`${!revealedClues[idx] ? "blur-lg" : ""} prose prose-sm mt-2`}>
+                  <div className={`${!revealedClues[idx] ? "blur-lg" : ""} prose prose-sm mt-2 text-justify`}>
                     <ReactMarkdown>{String(content)}</ReactMarkdown>
                   </div>
                   {!revealedClues[idx] && (
@@ -225,7 +223,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
               Object.entries(response).map(([title, content], idx) => (
                 <div key={idx} className="mb-6">
                   <h3 className="text-lg font-semibold">{title}</h3>
-                  <div className="prose prose-sm mt-2">
+                  <div className="prose prose-sm mt-2 text-justify">
                     <ReactMarkdown>{String(content)}</ReactMarkdown>
                   </div>
                 </div>
