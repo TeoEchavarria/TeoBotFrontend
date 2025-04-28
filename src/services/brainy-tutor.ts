@@ -32,7 +32,7 @@ export async function getBrainyTutorResponse(
   const res = await fetch(`${API_BASE}/execute`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question: params.user_query }),
+    body: JSON.stringify({ question: params.user_query, step_by_step: params.step_by_step }),
   });
 
   console.log('Response status:', res);
