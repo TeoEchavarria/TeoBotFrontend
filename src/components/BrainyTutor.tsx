@@ -67,7 +67,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   useEffect(() => {
     if (stepByStep && response) {
       const count = Object.keys(response).filter(
-        (key) => !["generate_image", "generate_graphic", "search_video"].includes(key)
+        (key) => !["search_diagrams", "generate_graphic", "search_video"].includes(key)
       ).length;
       setRevealedClues(Array(count).fill(false));
     }
@@ -103,7 +103,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   };
 
   // Flatten media
-  const images = [...(response?.generate_image || []), ...(response?.generate_graphic || [])];
+  const images = [...(response?.search_diagrams || []), ...(response?.generate_graphic || [])];
   const videos = response?.search_video || [];
   const getYouTubeThumbnail = (url: string) => {
     const m = url.match(/(?:\?v=|\/embed\/|\.be\/)([\w-]{11})/);
@@ -117,25 +117,30 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
       <form className="w-full max-w-xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="w-full sm:w-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                <img
-                  src={profiles.find((p) => p.value === selectedProfile)?.imgSrc}
-                  alt={selectedProfile}
-                  className="hidden sm:block rounded-full"
-                />
-                <span className="sm:hidden text-sm truncate">
-                  {profiles.find((p) => p.value === selectedProfile)?.label}
-                </span>
-              </button>
-            </DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild>
+            <button className="w-full sm:w-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center sm:justify-center focus:outline-none">
+              <img
+                src={profiles.find((p) => p.value === selectedProfile)?.imgSrc}
+                alt={selectedProfile}
+                className="hidden sm:block rounded-full"
+              />
+              <span className="sm:hidden text-sm font-medium truncate">
+                {profiles.find((p) => p.value === selectedProfile)?.label}
+              </span>
+            </button>
+          </DropdownMenuTrigger>
+
             <DropdownMenuContent align="start" sideOffset={4} className="w-56">
               <DropdownMenuLabel>Profiles</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup value={selectedProfile} onValueChange={setSelectedProfile}>
-                {profiles.map(({ value, label }) => (
-                  <DropdownMenuRadioItem key={value} value={value} className="px-2 py-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                    {label}
+                {profiles.map(({ value, label, imgSrc }) => (
+                  <DropdownMenuRadioItem
+                    key={value}
+                    value={value}
+                    className="flex items-center space-x-4 px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                  >
+                    <span>{label}</span>
                   </DropdownMenuRadioItem>
                 ))}
               </DropdownMenuRadioGroup>
@@ -148,14 +153,30 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
             className="flex-1 h-12 px-4 text-lg rounded-lg border border-gray-300 dark:border-gray-600"
           />
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <Button onClick={fetchData} disabled={isLoading} className="flex-1 h-12 bg-blue-600 text-white rounded-full shadow hover:bg-blue-700">
-              {isLoading ? <><Icons.spinner className="mr-2 h-5 w-5 animate-spin"/>Searching...</> : "Search"}
+            <Button
+              type="button"
+              onClick={fetchData}
+              disabled={isLoading}
+              className="flex-1 h-12 bg-blue-600 text-white rounded-full shadow hover:bg-blue-700 transition-transform hover:scale-105"
+            >
+              {isLoading ? (
+                <>
+                  <Icons.spinner className="mr-2 h-5 w-5 animate-spin" />Searching...
+                </>
+              ) : (
+                "Search"
+              )}
             </Button>
             <Button
+              type="button"
               onClick={() => onStepByStepChange(!stepByStep)}
-              className={`flex-1 h-12 rounded-full shadow ${stepByStep ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 hover:bg-gray-300'}`}
+              className={`flex-1 h-12 rounded-full shadow transition-transform hover:scale-105 ${
+                stepByStep
+                  ? "bg-green-600 text-white hover:bg-green-700"
+                  : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
+              }`}
             >
-              {stepByStep ? 'Step-by-Step On' : 'Step-by-Step Off'}
+              {stepByStep ? "Step-by-Step On" : "Step-by-Step Off"}
             </Button>
           </div>
         </div>
@@ -173,8 +194,8 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
         <Card className="mx-auto max-w-[90%] sm:max-w-[70%] md:max-w-[65%] border-none shadow-none">
           <CardContent className="p-4">
             {(stepByStep
-              ? Object.entries(response).filter(([k]) => !["generate_image","generate_graphic","search_video"].includes(k))
-              : Object.entries(response).filter(([k]) => !["generate_image","generate_graphic","search_video"].includes(k))
+              ? Object.entries(response).filter(([k]) => !["search_diagrams","generate_graphic","search_video"].includes(k))
+              : Object.entries(response).filter(([k]) => !["search_diagrams","generate_graphic","search_video"].includes(k))
             ).map(([title, content], idx) => (
               <div key={idx} className="mb-6">
                 {stepByStep && <Badge variant="secondary">Clue {idx+1}</Badge>}
