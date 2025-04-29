@@ -12,6 +12,11 @@ import { Icons } from "@/components/icons";
 import { getBrainyTutorResponse, BrainyTutorParams } from "@/services/brainy-tutor";
 import { useToast } from "@/hooks/use-toast";
 import { useVault } from "@/hooks/use-vault";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -44,6 +49,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
   const [isSaved, setIsSaved] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<string>("default");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const profiles = [
     { value: "default", label: "Default", imgSrc: "/profiles/default.png" },
@@ -75,6 +81,7 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
     try {
       const params: BrainyTutorParams = { user_query: userQuery, step_by_step: stepByStep, profile: selectedProfile };
       const res = await getBrainyTutorResponse(params);
+      console.log("Response:", res);
       setResponse(res);
       setSearchClicked(true);
     } catch (err) {
@@ -183,39 +190,92 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
               </div>
             ))}
 
-            {images.length > 0 && (
-              images.length === 1 ? (
-                <div className="flex justify-center mt-6">
-                  <a href={`data:image/png;base64,${images[0]}`} target="_blank" rel="noopener noreferrer">
-                    <img src={`data:image/png;base64,${images[0]}`} alt="img-0" className="max-w-full h-auto rounded-lg shadow" />
-                  </a>
-                </div>
-              ) : (
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 justify-items-center">
+          {images.length > 0 && (
+            <>
+              {/* ── Image carousel ─────────────────────────────── */}
+              <div className="mt-6">
+                <Swiper
+                  modules={[Navigation]}
+                  navigation
+                  spaceBetween={10}
+                  centeredSlides={images.length === 1}
+                  slidesPerView={1}
+                  breakpoints={{
+                    640: { slidesPerView: images.length > 1 ? 2 : 1 },
+                  }}
+                >
                   {images.map((b64, i) => (
-                    <a key={i} href={`data:image/png;base64,${b64}`} target="_blank" rel="noopener noreferrer">
-                      <img src={`data:image/png;base64,${b64}`} alt={`img-${i}`} className="max-w-full h-auto rounded-lg shadow" />
-                    </a>
+                    <SwiperSlide key={i} className="flex justify-center">
+                      <button
+                        onClick={() => setSelectedImage(b64)}
+                        className="focus:outline-none"
+                    >
+                        <img
+                          src={`data:image/png;base64,${b64}`}
+                          alt={`img-${i}`}
+                          className="max-w-full h-auto rounded-lg shadow"
+                        />
+                      </button>
+                    </SwiperSlide>
+                    
                   ))}
-                </div>
-              )
-            )}
+                </Swiper>
+              </div>
+
+              {/* ⋆── Image light-box modal ─────────────────────── */}
+              <Dialog
+                open={!!selectedImage}
+                onOpenChange={(open) => {
+                  if (!open) setSelectedImage(null);
+                }}
+              >
+                <DialogContent className="max-w-4xl p-0 bg-transparent border-none shadow-none">
+                  {selectedImage && (
+                    <img
+                      src={`data:image/png;base64,${selectedImage}`}
+                      alt="selected"
+                      className="w-full h-auto rounded-lg"
+                    />
+                  )}
+                </DialogContent>
+              </Dialog>
+              {/* ⋆─────────────────────────────────────────────── */}
+            </>
+          )}
 
             {videos.length > 0 && (
-              <div className="mt-6 flex flex-col items-center space-y-2">
-                {videos.map((url, i) => {
-                  const thumb = getYouTubeThumbnail(url);
-                  return (
-                    <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
-                      <Button variant="outline" className="w-full sm:w-auto">
-                        <div className="flex items-center space-x-2">
-                          {thumb && <img src={thumb} alt="thumb" className="w-8 h-8 rounded" />}
-                          <span>Ver video de YouTube</span>
-                        </div>
-                      </Button>
-                    </a>
-                  );
-                })}
+              <div className="mt-6">
+                <Swiper
+                  modules={[Navigation]}
+                  navigation
+                  spaceBetween={10}
+                  slidesPerView={1}
+                  breakpoints={{
+                    640: {
+                      slidesPerView: videos.length >= 3 ? 3 : videos.length,
+                    },
+                  }}
+                >
+                  {videos.map((url, i) => {
+                    const thumb = getYouTubeThumbnail(url);
+                    return (
+                      <SwiperSlide key={i} className="flex justify-center">
+                        <a
+                          href={url}
+                          target="_blank"
+                          className="w-full sm:w-auto"
+                        >
+                          <Button variant="outline" className="flex items-center space-x-2">
+                            {thumb && (
+                              <img src={thumb} alt="thumb" className="w-8 h-8 rounded" />
+                            )}
+                            <span>Ver video de YouTube</span>
+                          </Button>
+                        </a>
+                      </SwiperSlide>
+                    );
+                  })}
+                </Swiper>
               </div>
             )}
 
