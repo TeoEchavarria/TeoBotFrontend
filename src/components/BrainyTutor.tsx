@@ -1,5 +1,3 @@
-// BrainyTutor.tsx – responsive: stacked on mobile, side‑by‑side on ≥sm
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -54,37 +52,28 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
     { value: "expert_socratic_partner", label: "Expert", imgSrc: "/profiles/expert_socratic_partner.png" },
   ];
 
-  /* ---------------- Effects ---------------- */
   useEffect(() => setMounted(true), []);
-
   useEffect(() => {
     setResponse(null);
     setSearchClicked(false);
     setRevealedClues([]);
   }, [stepByStep]);
-
   useEffect(() => {
     if (stepByStep && response) {
-      const len = Object.keys(response).length;
-      setRevealedClues(Array(len).fill(false));
+      const count = Object.keys(response).filter(
+        (key) => !["generate_image", "generate_graphic", "search_video"].includes(key)
+      ).length;
+      setRevealedClues(Array(count).fill(false));
     }
   }, [stepByStep, response]);
-
   useEffect(() => {
     setIsSaved(savedQueries.some((q) => q.text === userQuery));
   }, [savedQueries, userQuery]);
 
-  /* ---------------- Handlers ---------------- */
   const fetchData = async () => {
     setIsLoading(true);
     try {
-
-      const params: BrainyTutorParams = {
-        user_query: userQuery,
-        step_by_step: stepByStep,
-        profile: selectedProfile,
-      };
-
+      const params: BrainyTutorParams = { user_query: userQuery, step_by_step: stepByStep, profile: selectedProfile };
       const res = await getBrainyTutorResponse(params);
       setResponse(res);
       setSearchClicked(true);
@@ -98,35 +87,37 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
 
   const revealClue = (idx: number) =>
     setRevealedClues((prev) => prev.map((v, i) => (i === idx ? true : v)));
-
   const toggleSave = () => {
     if (isSaved) {
       const idx = savedQueries.findIndex((q) => q.text === userQuery);
       if (idx > -1) deleteQuery(idx);
-    } else {
-      saveQuery(userQuery);
-    }
+    } else saveQuery(userQuery);
     setIsSaved(!isSaved);
   };
 
-  /* ---------------- JSX ---------------- */
+  // Flatten media
+  const images = [...(response?.generate_image || []), ...(response?.generate_graphic || [])];
+  const videos = response?.search_video || [];
+  const getYouTubeThumbnail = (url: string) => {
+    const m = url.match(/(?:\?v=|\/embed\/|\.be\/)([\w-]{11})/);
+    return m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : '';
+  };
+
   if (!mounted) return null;
 
   return (
     <div className="w-full mx-auto space-y-6 pb-24">
-      {/* Form */}
       <form className="w-full max-w-xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
         <div className="flex flex-col sm:flex-row items-center gap-4">
-          {/* Profile selector */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full sm:w-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center sm:justify-center focus:outline-none">
+              <button className="w-full sm:w-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                 <img
                   src={profiles.find((p) => p.value === selectedProfile)?.imgSrc}
                   alt={selectedProfile}
                   className="hidden sm:block rounded-full"
                 />
-                <span className="sm:hidden text-sm font-medium truncate">
+                <span className="sm:hidden text-sm truncate">
                   {profiles.find((p) => p.value === selectedProfile)?.label}
                 </span>
               </button>
@@ -135,59 +126,34 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
               <DropdownMenuLabel>Profiles</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup value={selectedProfile} onValueChange={setSelectedProfile}>
-                {profiles.map(({ value, label, imgSrc }) => (
-                  <DropdownMenuRadioItem
-                    key={value}
-                    value={value}
-                    className="flex items-center space-x-4 px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                  >
-                    <span>{label}</span>
+                {profiles.map(({ value, label }) => (
+                  <DropdownMenuRadioItem key={value} value={value} className="px-2 py-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                    {label}
                   </DropdownMenuRadioItem>
                 ))}
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Input */}
           <Input
             value={userQuery}
             placeholder="Enter your query"
             onChange={(e) => onUserQueryChange(e.target.value)}
             className="flex-1 h-12 px-4 text-lg rounded-lg border border-gray-300 dark:border-gray-600"
           />
-
-          {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <Button
-              type="button"
-              onClick={fetchData}
-              disabled={isLoading}
-              className="flex-1 h-12 bg-blue-600 text-white rounded-full shadow hover:bg-blue-700 transition-transform hover:scale-105"
-            >
-              {isLoading ? (
-                <>
-                  <Icons.spinner className="mr-2 h-5 w-5 animate-spin" />Searching...
-                </>
-              ) : (
-                "Search"
-              )}
+            <Button onClick={fetchData} disabled={isLoading} className="flex-1 h-12 bg-blue-600 text-white rounded-full shadow hover:bg-blue-700">
+              {isLoading ? <><Icons.spinner className="mr-2 h-5 w-5 animate-spin"/>Searching...</> : "Search"}
             </Button>
             <Button
-              type="button"
               onClick={() => onStepByStepChange(!stepByStep)}
-              className={`flex-1 h-12 rounded-full shadow transition-transform hover:scale-105 ${
-                stepByStep
-                  ? "bg-green-600 text-white hover:bg-green-700"
-                  : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
-              }`}
+              className={`flex-1 h-12 rounded-full shadow ${stepByStep ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 hover:bg-gray-300'}`}
             >
-              {stepByStep ? "Step-by-Step On" : "Step-by-Step Off"}
+              {stepByStep ? 'Step-by-Step On' : 'Step-by-Step Off'}
             </Button>
           </div>
         </div>
       </form>
 
-      {/* Loading alert */}
       {isLoading && (
         <Alert>
           <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -196,50 +162,68 @@ export const BrainyTutor: React.FC<BrainyTutorProps> = ({
         </Alert>
       )}
 
-      {/* Results */}
       {searchClicked && response && !isLoading && (
-        <Card className="border-none shadow-none mx-auto max-w-[90%] sm:max-w-[70%] md:max-w-[65%]">
+        <Card className="mx-auto max-w-[90%] sm:max-w-[70%] md:max-w-[65%] border-none shadow-none">
           <CardContent className="p-4">
-            {stepByStep ? (
-              Object.entries(response).map(([title, content], idx) => (
-                <div key={idx} className="mb-4">
-                  <Badge variant="secondary">Clue {idx + 1}</Badge>
-                  <h3 className="text-lg font-semibold">{title}</h3>
-                  <div className={`${!revealedClues[idx] ? "blur-lg" : ""} prose prose-sm mt-2 text-justify`}>
-                    <ReactMarkdown>{String(content)}</ReactMarkdown>
-                  </div>
-                  {!revealedClues[idx] && (
-                    <Button
-                      variant="outline"
-                      className="rounded-full shadow hover:scale-105 transition-transform mt-2"
-                      onClick={() => revealClue(idx)}
-                    >
-                      Reveal Clue
-                    </Button>
-                  )}
+            {(stepByStep
+              ? Object.entries(response).filter(([k]) => !["generate_image","generate_graphic","search_video"].includes(k))
+              : Object.entries(response).filter(([k]) => !["generate_image","generate_graphic","search_video"].includes(k))
+            ).map(([title, content], idx) => (
+              <div key={idx} className="mb-6">
+                {stepByStep && <Badge variant="secondary">Clue {idx+1}</Badge>}
+                <h3 className="text-lg font-semibold mt-1">{title}</h3>
+                <div className={`prose prose-sm mt-2 text-justify ${stepByStep && !revealedClues[idx] ? 'blur-lg' : ''}`}>
+                  <ReactMarkdown>{String(content)}</ReactMarkdown>
                 </div>
-              ))
-            ) : (
-              Object.entries(response).map(([title, content], idx) => (
-                <div key={idx} className="mb-6">
-                  <h3 className="text-lg font-semibold">{title}</h3>
-                  <div className="prose prose-sm mt-2 text-justify">
-                    <ReactMarkdown>{String(content)}</ReactMarkdown>
-                  </div>
+                {stepByStep && !revealedClues[idx] && (
+                  <Button variant="outline" className="mt-2" onClick={() => revealClue(idx)}>
+                    Reveal Clue
+                  </Button>
+                )}
+              </div>
+            ))}
+
+            {images.length > 0 && (
+              images.length === 1 ? (
+                <div className="flex justify-center mt-6">
+                  <a href={`data:image/png;base64,${images[0]}`} target="_blank" rel="noopener noreferrer">
+                    <img src={`data:image/png;base64,${images[0]}`} alt="img-0" className="max-w-full h-auto rounded-lg shadow" />
+                  </a>
                 </div>
-              ))
+              ) : (
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 justify-items-center">
+                  {images.map((b64, i) => (
+                    <a key={i} href={`data:image/png;base64,${b64}`} target="_blank" rel="noopener noreferrer">
+                      <img src={`data:image/png;base64,${b64}`} alt={`img-${i}`} className="max-w-full h-auto rounded-lg shadow" />
+                    </a>
+                  ))}
+                </div>
+              )
             )}
-            {searchClicked && (
-              <div className="flex justify-end mt-6">
-                <Button
-                  onClick={toggleSave}
-                  aria-label={isSaved ? "Remove from vault" : "Save to vault"}
-                  className="p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-transform hover:scale-105"
-                >
-                  <Bookmark className="h-5 w-5" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" />
-                </Button>
+
+            {videos.length > 0 && (
+              <div className="mt-6 flex flex-col items-center space-y-2">
+                {videos.map((url, i) => {
+                  const thumb = getYouTubeThumbnail(url);
+                  return (
+                    <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                      <Button variant="outline" className="w-full sm:w-auto">
+                        <div className="flex items-center space-x-2">
+                          {thumb && <img src={thumb} alt="thumb" className="w-8 h-8 rounded" />}
+                          <span>Ver video de YouTube</span>
+                        </div>
+                      </Button>
+                    </a>
+                  );
+                })}
               </div>
             )}
+
+            <div className="flex justify-end mt-8">
+              <Button onClick={toggleSave} aria-label={isSaved ? 'Remove' : 'Save'} className="p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700">
+                <Bookmark className="h-5 w-5" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" />
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
